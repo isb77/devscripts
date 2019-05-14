@@ -20,7 +20,7 @@ Param
     [bool] $buildPlugins=$true
 )
 
-$targetFolder = "C:\Users\i.bondarenko\source\tasks_tests2"
+$targetFolder = "C:\Users\i.bondarenko\source\tasks_tests"
 $currentLocation = Get-Location
 
 
@@ -101,7 +101,7 @@ function Get-Task(){
             Write-Host "creating $branchName.localhost web site ..." -ForegroundColor Yellow
     
             Write-Host "Task Folder $taskFolder" -ForegroundColor Green
-            $physicalSitePath = [System.IO.Path]::combine($taskFolder, "Loymax\ARMv2\build")
+            $physicalSitePath = [System.IO.Path]::combine($taskFolder, "Loymax\ARMv3\build")
             $physicalAppPath = [System.IO.Path]::combine($taskFolder, "Loymax\Kernel\Loymax.SystemApi")
     
             if(!(Test-Path $physicalSitePath)){
