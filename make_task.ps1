@@ -169,7 +169,7 @@ function Get-Task(){
 
         # Компилируем 
         if($buildArm) {
-            Build-Arm $taskName "Loymax\ARMv2" "gulp"
+            #Build-Arm $taskName "Loymax\ARMv2" "gulp"
             Build-Arm $taskName "Loymax\ARMv3" "npm"
         }
 
@@ -186,9 +186,9 @@ function Get-Task(){
     
             Write-Host "Task Folder $taskFolder" -ForegroundColor Green
             $physicalSitePath = [System.IO.Path]::combine($taskFolder, "Loymax\ARMv3\build")
-            $physicalExtSystemPath = [System.IO.Path]::combine($taskFolder, "Loymax\Kernel\Loymax.SystemApi")
+            $physicalExtSystemPath = [System.IO.Path]::combine($taskFolder, "Loymax\Kernel\Loymax.WebSites.ExternalSystem")
             $physicalPublicApiPath = [System.IO.Path]::combine($taskFolder, "Loymax\Kernel\Loymax.PublicApi")
-            $physicalSystemApiPath = [System.IO.Path]::combine($taskFolder, "Loymax\Kernel\Loymax.WebSites.ExternalSystem")
+            $physicalSystemApiPath = [System.IO.Path]::combine($taskFolder, "Loymax\Kernel\Loymax.SystemApi")
     
             if(!(Test-Path $physicalSitePath)){
             	New-Item -ItemType directory -Path $physicalSitePath
