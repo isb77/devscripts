@@ -79,7 +79,10 @@ function Install-Arm-Packages {
         [string] $taskName, 
 
         [Parameter (Position = 1)]
-        [string] $folder = ''
+        [string] $folder = '',
+
+        [Parameter (Position = 2)]
+        [string] $command = 'yarn install'
     )
 
     if([string]::IsNullOrWhiteSpace($folder)) 
@@ -96,7 +99,7 @@ function Install-Arm-Packages {
     Set-Location $sourceFolder
 
     Write-Host "Install Packages, Location: " (Get-Location) -ForegroundColor Green
-    yarn install    
+    Invoke-Expression $command
 }
 
 function Build-Arm {
@@ -163,8 +166,8 @@ function Get-Task(){
         Get-Repository-Branch $taskName $integrationBranchName  "https://tfs.loymax.net/DefaultCollection/Loymax/_git/Integration"
 
         # Устанавливаем пакеты и компилируем
-        Install-Arm-Packages $taskName "Loymax\ARMv2"
-        Install-Arm-Packages $taskName "Loymax\ARMv3"
+        #Install-Arm-Packages $taskName "Loymax\ARMv2"
+        Install-Arm-Packages $taskName "Loymax\ARMv3" "npm run pi"
         Install-Arm-Packages $taskName "Integration\Loymax.Arm.Plugins"
 
         # Компилируем 
