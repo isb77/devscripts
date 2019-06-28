@@ -31,7 +31,10 @@ function deploy([xml] $config)
                 Default 
                 {
                     foreach($pl in $Local:application.Plugin)
-                    {                        
+                    {      
+                        
+                        
+
                         $pluginToPath = [System.IO.Path]::combine($systemApiExtFolder, $pl.TargetPath)
                         $pluginFromPath = [System.IO.Path]::combine($newDir, $pl.PackagePath, "*.*")                        
                         

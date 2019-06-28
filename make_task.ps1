@@ -20,7 +20,10 @@ Param
     [bool] $buildPlugins=$true,
 
     [Parameter (Position = 5)]
-    [string] $targetFolder = ""
+    [string] $targetFolder = "",    
+
+    [Parameter (Position = 6)]
+    [string] $version = 2
 )
 
 if([string]::IsNullOrWhiteSpace($targetFolder)) {    
@@ -167,13 +170,34 @@ function Get-Task(){
 
         # Устанавливаем пакеты и компилируем
         #Install-Arm-Packages $taskName "Loymax\ARMv2"
-        Install-Arm-Packages $taskName "Loymax\ARMv3" "npm run pi"
-        Install-Arm-Packages $taskName "Integration\Loymax.Arm.Plugins"
+        if($buildArm){
+
+            if($version -eq 2){
+                Install-Arm-Packages $taskName "Loymax\ARMv3" "npm run pi"
+            }
+            else
+            {
+                Install-Arm-Packages $taskName "Loymax\ARMv2" "npm install"
+            }
+
+            
+        }
+        
+        if($buildPlugins){
+            Install-Arm-Packages $taskName "Integration\Loymax.Arm.Plugins"
+        }
+        
 
         # Компилируем 
         if($buildArm) {
-            #Build-Arm $taskName "Loymax\ARMv2" "gulp"
-            Build-Arm $taskName "Loymax\ARMv3" "npm"
+            if($version -eq 2)
+            {
+                Build-Arm $taskName "Loymax\ARMv3" "npm"
+            }
+            else 
+            {
+                Build-Arm $taskName "Loymax\ARMv2" "gulp"    
+            }                    
         }
 
         if($buildPlugins) {
@@ -188,7 +212,12 @@ function Get-Task(){
             Write-Host "creating $branchName.localhost web site ..." -ForegroundColor Yellow
     
             Write-Host "Task Folder $taskFolder" -ForegroundColor Green
-            $physicalSitePath = [System.IO.Path]::combine($taskFolder, "Loymax\ARMv3\build")
+            $iisArmPath = "Loymax\ARMv3\build"
+            if($version  -lt 2){
+                $iisArmPath = "Loymax\ARMv2\build"
+            }
+
+            $physicalSitePath = [System.IO.Path]::combine($taskFolder, $iisArmPath)
             $physicalExtSystemPath = [System.IO.Path]::combine($taskFolder, "Loymax\Kernel\Loymax.WebSites.ExternalSystem")
             $physicalPublicApiPath = [System.IO.Path]::combine($taskFolder, "Loymax\Kernel\Loymax.PublicApi")
             $physicalSystemApiPath = [System.IO.Path]::combine($taskFolder, "Loymax\Kernel\Loymax.SystemApi")
