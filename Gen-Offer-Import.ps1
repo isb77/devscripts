@@ -3,10 +3,53 @@ Param
 (
     
     [Parameter (Mandatory=$false, Position = 0)]
-    [string] $targetFilename = "offer_import.xml"
+    [string] $targetFilename = "offer_import.xml",
+
+    [Parameter (Position = 1)]
+    [string] $partnerID = "016e8025-7068-43e5-c689-8b01e638c43a",
+
+    [Parameter (Position = 2)]
+    [string] $catalogID = "15a586da-3323-42aa-b72f-5461d0ef4cea",
+
+    [Parameter (Position = 3)]
+    [int] $startCard = 10000001,
+
+    [Parameter (Position = 4)]
+    [int] $countCards = 100,
+    
+    [Parameter (Position = 5)]
+    [int] $countOffers = 1000    
 )
 
 
+function WriteProductsFilter(){
+    param (
+        [System.Xml.XmlTextWriter] $xml,
+        [string] $name
+    )
+
+    $xml.WriteStartElement("ChequePositionGoodsFilter");
+        $xml.WriteAttributeString("Name", "goods_filter_$name");
+        $xml.WriteAttributeString("Type", "OnlyGoods");
+
+        $xml.WriteStartElement("GoodsGroups")
+            $xml.WriteStartElement("NewGoodsGroup")
+            $xml.WriteAttributeString("Name", "goods_filter_$name");
+            $xml.WriteAttributeString("CatalogId", $catalogID);
+            
+            $id = New-Guid;
+            $xml.WriteElementString("Id", $id)
+            $xml.WriteElementString("State", "Visible")
+            for($i = 0; $i -lt 100; $i++){
+                $id = "{0:000000}" -f $i
+                $xml.WriteElementString("IncludeItem", $id)
+            }
+
+            $xml.WriteEndElement()
+        $xml.WriteEndElement()                                    
+                                
+    $xml.WriteEndElement()
+}
 
 function WritePartners {
     param (
@@ -16,7 +59,7 @@ function WritePartners {
     $xml.WriteStartElement("Partners")
     $xml.WriteStartElement("Partner")
     
-    $xml.WriteAttributeString("ID", "016e8025-7068-43e5-c689-8b01e638c43a")
+    $xml.WriteAttributeString("ID", $partnerID)
 
     $xml.WriteEndElement()
     $xml.WriteEndElement()
@@ -76,10 +119,16 @@ function WriteChain{
         $xml.WriteStartElement("Filters");        
             $xml.WriteStartElement("CardsFilter");
                 $xml.WriteAttributeString("Name", "filter_$name");
-                $xml.WriteStartElement("Card");
-                $xml.WriteString("300099920")                
-                $xml.WriteEndElement()
+                
+                for($i = 0; $i -lt $countCards; $i++){
+                    $number = "{0:000000000}" -f $startCard++
+                    $xml.WriteElementString("Card", $number)
+                }
+                                
             $xml.WriteEndElement()
+
+            #WriteProductsFilter -xml $xml -name $name
+            
         $xml.WriteEndElement()    
 
         WriteActions $xml
@@ -100,7 +149,8 @@ $xml.WriteStartDocument("");
         $xml.WriteAttributeString("Version","2.0")
 
         $xml.WriteStartElement("Offer")
-            $xml.WriteAttributeString("ID", "664AA65C-BAB8-4F3D-89AA-8138EEE6EDD2")
+            $id = New-Guid
+            $xml.WriteAttributeString("ID", $id)
             $xml.WriteAttributeString("Title", "1000 Chains")
             $xml.WriteAttributeString("ApplyChangesDate", "2019-06-25T00:00:17")
             $xml.WriteAttributeString("State", "Running")
@@ -112,13 +162,13 @@ $xml.WriteStartDocument("");
             $xml.WriteEndElement()
 
             WritePartners($xml)
-            WriteLoyaltyProgram($xml)
+            #WriteLoyaltyProgram($xml)
 
             $xml.WriteStartElement("Rules")
                 $xml.WriteStartElement("PurchaseCalculate")
                     $xml.WriteStartElement("Chains")
 
-                    for ( $n = 0; $n -le 1000; $n++ ) {
+                    for ( $n = 0; $n -lt $countOffers; $n++ ) {
                         WriteChain -xml $xml -order $n -name "New chain $n"
                     }
 
