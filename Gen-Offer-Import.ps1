@@ -18,7 +18,10 @@ Param
     [int] $countCards = 100,
     
     [Parameter (Position = 5)]
-    [int] $countOffers = 1000    
+    [int] $countOffers = 1000,
+
+    [Parameter (Position = 6)]
+    [int] $countProducts = 100    
 )
 
 
@@ -33,14 +36,14 @@ function WriteProductsFilter(){
         $xml.WriteAttributeString("Type", "OnlyGoods");
 
         $xml.WriteStartElement("GoodsGroups")
-            $xml.WriteStartElement("NewGoodsGroup")
-            $xml.WriteAttributeString("Name", "goods_filter_$name");
-            $xml.WriteAttributeString("CatalogId", $catalogID);
-            
             $id = New-Guid;
+            $xml.WriteStartElement("NewGoodsGroup")
+            $xml.WriteAttributeString("Name", "goods_filter_$name_$id");
+            $xml.WriteAttributeString("CatalogId", $catalogID);
+                        
             $xml.WriteElementString("Id", $id)
             $xml.WriteElementString("State", "Visible")
-            for($i = 0; $i -lt 100; $i++){
+            for($i = 0; $i -lt $countProducts; $i++){
                 $id = "{0:000000}" -f $i
                 $xml.WriteElementString("IncludeItem", $id)
             }
@@ -127,7 +130,7 @@ function WriteChain{
                                 
             $xml.WriteEndElement()
 
-            #WriteProductsFilter -xml $xml -name $name
+            WriteProductsFilter -xml $xml -name $name
             
         $xml.WriteEndElement()    
 
