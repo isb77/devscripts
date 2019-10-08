@@ -1,9 +1,9 @@
 Param
 (    
-    [Parameter (Mandatory=$false, Position = 0)]
+    [Parameter (Mandatory=$true, Position = 0)]
     [string] $pluginName = "Loymax.Plugins.PrivateClubs",
 
-    [Parameter (Mandatory=$false, Position = 1)]
+    [Parameter (Mandatory=$true, Position = 1)]
     [string] $dbName = "master_Loymax",
 
     [Parameter (Position = 2)]
