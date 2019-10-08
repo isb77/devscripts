@@ -1,7 +1,7 @@
 Param
 (    
     [Parameter (Mandatory=$false, Position = 0)]
-    [string] $pluginName = "Loymax.Wallet",
+    [string] $pluginName = "Loymax.Plugins.PrivateClubs",
 
     [Parameter (Mandatory=$false, Position = 1)]
     [string] $dbName = "master_Loymax",
@@ -9,6 +9,29 @@ Param
     [Parameter (Position = 2)]
     [string] $sqlserver = "(localdb)\MSSQLLocalDB"    
 )
+
+function Deploy_Create([string] $version)
+{
+	try
+	{
+		$databaseServerConfig.Database.Name | Where-Object { if($_ -match "_Loymax$") { $dbLoymax = $server.Databases[$_] } }
+		$authorDeploy = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+		$dateTimeNow = [DateTime]::Now.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fff')
+					
+		# Создать новый деплой
+		$newDeploysGuid = New-Guid
+        $createNewDeploy = "INSERT INTO [Config_Deploy] ([PackageVersion], [Date], [IsSuccess], [Author], [ExternalId]) VALUES('$version', '$dateTimeNow', '0', '$authorDeploy', CAST('$newDeploysGuid' AS UNIQUEIDENTIFIER))"
+        Invoke-SqlCmd -ServerInstance $sqlserver -Query $createNewDeploy -Database $dbName		             
+	}
+	catch
+	{
+		$_.Exception | format-list -force | Out-String|% {Write-Error $_}
+        	throw
+	}       
+	                               
+	return $newDeploysGuid
+}
+
 
 function Database_ExecuteScripts([string] $filePath, [guid] $newDeploysGuid)
 {
@@ -29,7 +52,7 @@ function Database_ExecuteScripts([string] $filePath, [guid] $newDeploysGuid)
 	    $sw = [Diagnostics.Stopwatch]::StartNew()
         
         # Выполняем
-        #Invoke-SqlCmd -ServerInstance $sqlserver -InputFile $filePath -Database $dbName
+        Invoke-SqlCmd -ServerInstance $sqlserver -InputFile $filePath -Database $dbName
         
         $sw.Stop()
 	    $elapsed = [convert]::ToInt32($sw.Elapsed.TotalMilliseconds)
@@ -39,7 +62,7 @@ function Database_ExecuteScripts([string] $filePath, [guid] $newDeploysGuid)
 		
 		$insertScript = "INSERT INTO [Config_Script] ([ID], [Description], [ExecutionDate], [ConfigDeployId], [Duration]) VALUES('$($filename)','','$dateTimeNow', '$newDeploysGuid', $elapsed )"
 		# Сохраняем дату выполнения скрипта
-        #Invoke-Sqlcmd -ServerInstance $sqlserver -Database $dbName -Query $insertScript
+        Invoke-Sqlcmd -ServerInstance $sqlserver -Database $dbName -Query $insertScript
         Write-Host "Inserted" -ForegroundColor Green
     }
     catch
@@ -53,9 +76,11 @@ function IsExecuted([string] $filename)
 {
     $countScript = "SELECT count(*) Count FROM [Config_Script] WHERE [ID] ='$($filename)'"
     # Проверяем, выполнялся ли скрипт обновления
-        
+    
+    #Write-Host $countScript
     $res = Invoke-Sqlcmd -ServerInstance $sqlserver -Database $dbName -Query $countScript | % {$_['Count']}
-    if ($res.Count -eq 1)    
+    
+    if ($res -eq 1)    
     {    
         return $TRUE;
     }
@@ -65,9 +90,8 @@ function IsExecuted([string] $filename)
 
 $currentLocation = Get-Location
 $ns = @{ defaultNamespace = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd" }
-$deployGuid = [guid]::newguid()
 
-clear
+Clear-Host
 Write-Host 'Working folder: ' $currentLocation
 
 $files = Get-ChildItem -Path $currentLocation -Recurse -Filter *.nuspec | Select-Xml -XPath "//defaultNamespace:id[. = ""$pluginName""]" -Namespace $ns | Group path | Select Name
@@ -83,6 +107,7 @@ $scripts = $files | foreach {
 } 
 
 Import-Module "sqlps" -DisableNameChecking
+$deployGuid = Deploy_Create -version "Local deploy $pluginName"
 $scripts | where {$_ -match "sql$"} | % {        
     Database_ExecuteScripts -db $database -filePath $_ -newDeploysGuid $deployGuid
 }
