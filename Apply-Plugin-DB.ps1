@@ -1,12 +1,15 @@
 Param
-(    
-    [Parameter (Mandatory=$true, Position = 0)]
-    [string] $pluginName = "Loymax.Plugins.PrivateClubs",
+(   
+[Parameter (Mandatory=$false, Position = 0)]
+    [string] $branch = "master",
+	
+     [Parameter (Mandatory=$false, Position = 1)]
+    [string] $pluginName = "Loymax.Wallet",
 
-    [Parameter (Mandatory=$true, Position = 1)]
-    [string] $dbName = "master_Loymax",
+    [Parameter (Mandatory=$false, Position = 2)]
+    [string] $dbName = "Loymax",	
 
-    [Parameter (Position = 2)]
+    [Parameter (Position = 3)]
     [string] $sqlserver = "(localdb)\MSSQLLocalDB"    
 )
 
@@ -106,8 +109,16 @@ $scripts = $files | foreach {
     }
 } 
 
-Import-Module "sqlps" -DisableNameChecking
-$deployGuid = Deploy_Create -version "Local deploy $pluginName"
+#Import-Module "sqlps" -DisableNameChecking
+#$deployGuid = Deploy_Create -version "Local deploy $pluginName"
 $scripts | where {$_ -match "sql$"} | % {        
-    Database_ExecuteScripts -db $database -filePath $_ -newDeploysGuid $deployGuid
+
+	#write-host 'TRY: ' $_
+	
+	if ($_ -like "*\$dbName\*" && ($_ -like "*\$dbName*\*") -eq $false) {
+		write-host "-db" $database "-filePath" $_ -newDeploysGuid $deployGuid	
+	}
+
+    #Database_ExecuteScripts -db $database -filePath $_ -newDeploysGuid $deployGuid	
+	#write-host "-db" $database "-filePath" $_ -newDeploysGuid $deployGuid	
 }

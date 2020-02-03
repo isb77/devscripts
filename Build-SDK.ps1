@@ -5,4 +5,4 @@ Param (
 
 )
 
-nuget pack -Version "2019.2.0.$version-local" -Properties Configuration=Debug -IncludeReferencedProjects -symbols
+nuget pack -Version "2020.2.0.$version-local" -Properties Configuration=Debug -IncludeReferencedProjects -symbols
