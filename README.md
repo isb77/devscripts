@@ -10,3 +10,6 @@
 
 2. Запускать скрипт под администратором
 3. Для удобства можно добавить скрипт в path
+4. Установка политики безопасности для неподписанных скриптов 
+	Get-ExecutionPolicy -List
+	Set-ExecutionPolicy -ExecutionPolicy <PolicyName> -Scope <scope>
