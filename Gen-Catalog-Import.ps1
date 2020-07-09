@@ -14,12 +14,14 @@ Param
     [int] $countGoods = 1000        
 )
 
-$productPrefix = 
+#$productPrefix = 
 
 $xml = New-Object System.XMl.XmlTextWriter($targetFilename,$Null)
 
 $xml.Formatting = "Indented"
 $xml.Indentation = 4
+
+write-host "start..." $xml
 
 $xml.WriteStartDocument("");
     $xml.WriteStartElement("TreeNode")
